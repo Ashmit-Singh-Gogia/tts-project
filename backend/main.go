@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -34,14 +33,31 @@ func main() {
 			"message": "pong",
 		})
 	})
+	router.GET("/history", func(c *gin.Context) {
+		var history []TTSHistory
+		result := db.Find(&history)
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": result.Error})
+			return
+		}
+		c.JSON(http.StatusAccepted, gin.H{"Data": history})
+	})
+
 	router.POST("/createRequest", func(c *gin.Context) {
 		var json TTSRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		result := db.Create(&json)
-		fmt.Println(result.Error)
+
+		newRecord := TTSHistory{
+			Text: json.Text,
+		}
+		result := db.Create(&newRecord)
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": result.Error})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{"status": "saved"})
 	})
 	router.Run(":8080")
