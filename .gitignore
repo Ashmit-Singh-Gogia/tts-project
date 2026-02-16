@@ -1,0 +1,4 @@
+# --- Go specific ---
+# Ignore the compiled binary files that Go creates
+/backend/tts-backend
+/backend/tts-backend.exe
