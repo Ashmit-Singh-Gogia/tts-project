@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,8 +30,8 @@ func main() {
 		return
 	}
 	db.AutoMigrate(&TTSHistory{})
-	db.AutoMigrate(&TTSRequest{})
 	router := gin.Default()
+	router.Static("/audio", "./audio")
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -67,7 +68,12 @@ func main() {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": "saved"})
+		publicURL := fmt.Sprintf("/audio/%s.mp3", fileName)
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":    "saved",
+			"audio_url": publicURL,
+		})
 	})
 	router.Run(":8080")
 }
