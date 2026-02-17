@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	htgotts "github.com/hegedustibor/htgo-tts"
 	"github.com/hegedustibor/htgo-tts/voices"
@@ -31,6 +32,7 @@ func main() {
 	}
 	db.AutoMigrate(&TTSHistory{})
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.Static("/audio", "./audio")
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
