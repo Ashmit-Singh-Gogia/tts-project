@@ -3,3 +3,4 @@
 /backend/tts-backend
 /backend/tts-backend.exe
 *.db
+/backend/audio/

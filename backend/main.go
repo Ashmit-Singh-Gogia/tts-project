@@ -3,8 +3,11 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	htgotts "github.com/hegedustibor/htgo-tts"
+	"github.com/hegedustibor/htgo-tts/voices"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -49,13 +52,19 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
 		newRecord := TTSHistory{
 			Text: json.Text,
 		}
 		result := db.Create(&newRecord)
 		if result.Error != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Error": result.Error})
+			return
+		}
+		speech := htgotts.Speech{Folder: "audio", Language: voices.English}
+		fileName := strconv.Itoa(int(newRecord.ID))
+		_, err := speech.CreateSpeechFile(newRecord.Text, fileName)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "saved"})
