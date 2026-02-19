@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -70,42 +69,6 @@ func main() {
 		})
 	})
 
-	router.POST("/upload", func(c *gin.Context) {
-		fileHeader, err := c.FormFile("file")
-		if err != nil {
-			c.String(http.StatusBadRequest, "Upload failed: "+err.Error())
-			return
-		}
-		file, err := fileHeader.Open()
-		if err != nil {
-			c.String(http.StatusInternalServerError, "Error opening file")
-			return
-		}
-		defer file.Close() // Always close the file when done!
-		content, err := io.ReadAll(file)
-		if err != nil {
-			c.String(http.StatusInternalServerError, "Error reading file")
-			return
-		}
-		text := string(content)
-		entry := History{}
-		result := db.Create(&entry)
-		if result.Error != nil {
-			c.JSON(500, gin.H{"error": "Database error"})
-			return
-		}
-
-		// 7. UPDATE: Save the final filename to the History table
-		db.Model(&entry).Update("Filename", finalFileName)
-
-		// 8. Respond to Frontend
-		// We strip "audio/" for the URL so the browser can load it
-		publicURL := "/" + finalFileName
-		c.JSON(200, gin.H{
-			"status":    "success",
-			"audio_url": publicURL,
-			"id":        entry.ID,
-		})
-	})
+	router.POST("/upload", HandleTextUpload)
 	router.Run(":8080")
 }
