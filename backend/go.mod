@@ -3,13 +3,13 @@ module github.com/ashmit-singh-gogia/tts-backend
 go 1.25.3
 
 require (
+	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
 )
 
 require (
-	github.com/gin-contrib/cors v1.7.6 // indirect
 	github.com/hajimehoshi/go-mp3 v0.3.3 // indirect
 	github.com/hajimehoshi/oto/v2 v2.2.0 // indirect
 )

@@ -4,3 +4,5 @@
 /backend/tts-backend.exe
 *.db
 /backend/audio/
+.DS_Store
+**/.DS_Store
