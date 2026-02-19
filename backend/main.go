@@ -1,74 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
+	"log"
 
+	"github.com/ashmit-singh-gogia/tts-backend/internal/database"
+	"github.com/ashmit-singh-gogia/tts-backend/internal/handlers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	htgotts "github.com/hegedustibor/htgo-tts"
-	"github.com/hegedustibor/htgo-tts/voices"
-	"gorm.io/gorm"
 )
 
-type TTSHistory struct {
-	gorm.Model
-	Text string
-}
-type TTSRequest struct {
-	Text string `json:"text"`
-}
-
-// Helper Functions //
-
 func main() {
-	router := gin.Default()
-	router.Use(cors.Default())
-	router.Static("/audio", "./audio")
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	router.GET("/history", func(c *gin.Context) {
-		var history []TTSHistory
-		result := db.Find(&history)
-		if result.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error": result.Error})
-			return
-		}
-		c.JSON(http.StatusAccepted, gin.H{"Data": history})
-	})
-	router.POST("/createRequest", func(c *gin.Context) {
-		var json TTSRequest
-		if err := c.ShouldBindJSON(&json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		newRecord := TTSHistory{
-			Text: json.Text,
-		}
-		result := db.Create(&newRecord)
-		if result.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error": result.Error})
-			return
-		}
-		speech := htgotts.Speech{Folder: "audio", Language: voices.English}
-		fileName := strconv.Itoa(int(newRecord.ID))
-		_, err := speech.CreateSpeechFile(newRecord.Text, fileName)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		publicURL := fmt.Sprintf("/audio/%s.mp3", fileName)
+	// 1. Initialize the Database (This fills the "DB" box we talked about!)
+	database.InitDB()
+	log.Println("Database initialized successfully")
 
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "saved",
-			"audio_url": publicURL,
-		})
-	})
+	// 2. Create the Gin Router
+	r := gin.Default()
+	r.Static("/audio", "./audio")
+	// 3. Setup CORS so your React frontend can talk to it without errors
+	r.Use(cors.Default())
 
-	router.POST("/upload", HandleTextUpload)
-	router.Run(":8080")
+	// 4. Register Routes (Connecting the route to your new Handler)
+	r.POST("/upload", handlers.HandleTextUpload)
+
+	// 5. Start the Server
+	log.Println("Server is running on port 8080...")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal("Failed to start server:", err)
+	}
 }
