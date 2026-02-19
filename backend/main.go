@@ -1,14 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
-
+	"github.com/ashmit-singh-gogia/tts-backend/internal/database"
+	"github.com/ashmit-singh-gogia/tts-backend/internal/handlers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	htgotts "github.com/hegedustibor/htgo-tts"
-	"github.com/hegedustibor/htgo-tts/voices"
 	"gorm.io/gorm"
 )
 
@@ -23,52 +19,12 @@ type TTSRequest struct {
 // Helper Functions //
 
 func main() {
+	database.InitDB()
 	router := gin.Default()
 	router.Use(cors.Default())
 	router.Static("/audio", "./audio")
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+	router.POST("/upload", func(c *gin.Context) {
+		handlers.HandleTextUpload(c, database.DB)
 	})
-	router.GET("/history", func(c *gin.Context) {
-		var history []TTSHistory
-		result := db.Find(&history)
-		if result.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error": result.Error})
-			return
-		}
-		c.JSON(http.StatusAccepted, gin.H{"Data": history})
-	})
-	router.POST("/createRequest", func(c *gin.Context) {
-		var json TTSRequest
-		if err := c.ShouldBindJSON(&json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		newRecord := TTSHistory{
-			Text: json.Text,
-		}
-		result := db.Create(&newRecord)
-		if result.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error": result.Error})
-			return
-		}
-		speech := htgotts.Speech{Folder: "audio", Language: voices.English}
-		fileName := strconv.Itoa(int(newRecord.ID))
-		_, err := speech.CreateSpeechFile(newRecord.Text, fileName)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		publicURL := fmt.Sprintf("/audio/%s.mp3", fileName)
-
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "saved",
-			"audio_url": publicURL,
-		})
-	})
-
-	router.POST("/upload", HandleTextUpload)
 	router.Run(":8080")
 }

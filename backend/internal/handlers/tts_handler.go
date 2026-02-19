@@ -4,16 +4,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ashmit-singh-gogia/tts-backend/internal/database"
 	"github.com/ashmit-singh-gogia/tts-backend/internal/models"
 	"github.com/ashmit-singh-gogia/tts-backend/internal/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB = database.InitDB()
-
-func HandleTextUpload(c *gin.Context) {
+func HandleTextUpload(c *gin.Context, db *gorm.DB) {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		c.String(http.StatusBadRequest, "Upload failed: "+err.Error())
@@ -32,7 +29,7 @@ func HandleTextUpload(c *gin.Context) {
 	}
 	text := string(content)
 	entry := models.History{}
-	result := DB.Create(&entry)
+	result := db.Create(&entry)
 	if result.Error != nil {
 		c.JSON(500, gin.H{"error": "Database error"})
 		return
@@ -43,7 +40,7 @@ func HandleTextUpload(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "Some Internal error"})
 		return
 	}
-	DB.Model(&entry).Update("Filename", finalFileName)
+	db.Model(&entry).Update("Filename", finalFileName)
 
 	publicURL := "/" + finalFileName
 	c.JSON(200, gin.H{
