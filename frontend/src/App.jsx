@@ -13,7 +13,7 @@ function App() {
       headers: { "Content-Type": "application/json" },
     })
     const data = await response.json();
-    setaudioUrl("http://localhost:8080" + data.audio_url);
+    setAudioUrl("http://localhost:8080" + data.audio_url);
   };
 
   const handleFileChange = (event) => {
