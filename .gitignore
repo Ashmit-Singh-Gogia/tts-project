@@ -6,3 +6,4 @@
 /backend/audio/
 .DS_Store
 **/.DS_Store
+/backend/tmp/

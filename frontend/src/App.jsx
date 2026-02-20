@@ -94,7 +94,6 @@ function App() {
             <input 
               type="file" 
               className="hidden" 
-              accept=".txt"
               onChange={handleFileChange} 
             />
           </label>
