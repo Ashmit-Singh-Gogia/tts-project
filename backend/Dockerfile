@@ -1,5 +1,5 @@
 # Start from a lightweight Linux image with Go installed
-FROM golang:1.23-alpine
+FROM golang:1.25-alpine
 
 # Install the poppler-utils package (this gives us pdftotext)
 RUN apk add --no-cache poppler-utils
