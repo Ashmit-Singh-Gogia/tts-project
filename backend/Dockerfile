@@ -2,7 +2,7 @@
 FROM golang:1.25-alpine
 
 # Install the poppler-utils package (this gives us pdftotext)
-RUN apk add --no-cache poppler-utils
+RUN apk add --no-cache poppler-utils gcc musl-dev alsa-lib-dev
 
 # Set the working directory inside the container
 WORKDIR /app
