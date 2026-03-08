@@ -21,7 +21,12 @@ type TTSRequest struct {
 func main() {
 	database.InitDB()
 	router := gin.Default()
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{
+		"http://localhost:5173",
+		"https://tts-project-pjgs4a2q4-ashmit-singh-gogias-projects.vercel.app", // Your exact live URL!
+	}
+	router.Use(cors.New(config))
 	router.Static("/audio", "./audio")
 	router.POST("/upload", func(c *gin.Context) {
 		handlers.HandleTextUpload(c, database.DB)

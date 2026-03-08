@@ -6,14 +6,18 @@ function App() {
   let [audioUrl , setAudioUrl] = useState("")
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  // This looks for the Vercel variable first, but falls back to localhost if it's missing
+  // App.jsx
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
   const handleConvert = async () => {
-    const response = await fetch('http://localhost:8080/createRequest',{
+    const response = await fetch(`${API_BASE_URL}/createRequest`,{
       method: "POST",
       body: JSON.stringify({ text: text }),
       headers: { "Content-Type": "application/json" },
     })
     const data = await response.json();
-    setAudioUrl("http://localhost:8080" + data.audio_url);
+    setAudioUrl(`${API_BASE_URL}${data.audio_url}`);
   };
 
   const handleFileChange = (event) => {
@@ -38,7 +42,7 @@ function App() {
 
       // Send POST request
       // NOTE: Make sure this URL matches your Go route ("/upload" or "/uploadText")
-      const response = await fetch("http://localhost:8080/upload", {
+      const response = await fetch(`${API_BASE_URL}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -51,7 +55,7 @@ function App() {
       
       // 3. Set the Audio URL to play it
       // Ensure the backend returns { "audio_url": "/audio/..." }
-      setAudioUrl("http://localhost:8080" + data.audio_url);
+      setAudioUrl(`${API_BASE_URL}${data.audio_url}`);
 
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -68,7 +72,7 @@ function App() {
         Speech Generator
       </h1>
       <p className="text-gray-500 text-center mb-8 text-sm">
-        Upload a .txt file to convert it into high-quality audio
+        Upload a .txt or .pdf file to convert it into high-quality audio
       </p>
 
       <div className="space-y-6">
@@ -94,6 +98,7 @@ function App() {
             <input 
               type="file" 
               className="hidden" 
+              accept=".txt,.pdf" 
               onChange={handleFileChange} 
             />
           </label>
